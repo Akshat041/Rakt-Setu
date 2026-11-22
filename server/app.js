@@ -1,11 +1,11 @@
 import cors from "cors";
 import express from "express";
-import { mockDonors, VALID_BLOOD_GROUPS } from "./data/donors.js";
+import { mapDonorRow, openDatabase } from "./database.js";
+import { VALID_BLOOD_GROUPS } from "./data/donors.js";
 
 export function createApp() {
   const app = express();
-  const donors = mockDonors.map((donor) => ({ ...donor }));
-  let nextDonorId = Math.max(...donors.map((donor) => donor.id)) + 1;
+  const database = openDatabase();
 
   app.use(cors());
   app.use(express.json({ limit: "16kb" }));
@@ -35,16 +35,31 @@ export function createApp() {
       });
     }
 
-    const partialMatch = (value, filter) =>
-      String(value).toLowerCase().includes(String(filter).trim().toLowerCase());
+    const conditions = [];
+    const parameters = [];
 
-    const results = donors.filter((donor) => {
-      if (bloodGroup && donor.bloodGroup !== bloodGroup) return false;
-      if (city && !partialMatch(donor.city, city)) return false;
-      if (locality && !partialMatch(donor.locality, locality)) return false;
-      if (available !== undefined && donor.available !== (available === "true")) return false;
-      return true;
-    });
+    if (bloodGroup) {
+      conditions.push("blood_group = ?");
+      parameters.push(bloodGroup);
+    }
+    if (city) {
+      conditions.push("LOWER(city) LIKE LOWER(?)");
+      parameters.push(`%${String(city).trim()}%`);
+    }
+    if (locality) {
+      conditions.push("LOWER(locality) LIKE LOWER(?)");
+      parameters.push(`%${String(locality).trim()}%`);
+    }
+    if (available !== undefined) {
+      conditions.push("available = ?");
+      parameters.push(available === "true" ? 1 : 0);
+    }
+
+    const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const rows = database
+      .prepare(`SELECT * FROM donors ${whereClause} ORDER BY id ASC`)
+      .all(...parameters);
+    const results = rows.map(mapDonorRow);
 
     response.status(200).json({
       count: results.length,
@@ -87,19 +102,24 @@ export function createApp() {
       });
     }
 
-    const createdDonor = {
-      id: nextDonorId++,
-      name: name.trim(),
+    const createdAt = new Date().toISOString();
+    const insert = database.prepare(`
+      INSERT INTO donors
+        (name, blood_group, city, locality, phone, available, consent, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, 1, ?)
+    `);
+    const result = insert.run(
+      name.trim(),
       bloodGroup,
-      city: city.trim(),
-      locality: locality.trim(),
-      phone: phone.trim(),
-      available,
-      consent: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    donors.push(createdDonor);
+      city.trim(),
+      locality.trim(),
+      phone.trim(),
+      available ? 1 : 0,
+      createdAt,
+    );
+    const createdDonor = mapDonorRow(
+      database.prepare("SELECT * FROM donors WHERE id = ?").get(result.lastInsertRowid),
+    );
 
     response.status(201).json({
       message: "Donor registered successfully.",
