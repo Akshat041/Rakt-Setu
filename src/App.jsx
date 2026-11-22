@@ -87,9 +87,9 @@ function App() {
     <>
       <header className="nav-wrap">
         <nav className="nav container" aria-label="Primary navigation">
-          <a className="brand" href="#top" aria-label="LifeLink home">
+          <a className="brand" href="#top" aria-label="RaktSetu home">
             <span className="brand-mark" aria-hidden="true">+</span>
-            <span>Life<span>Link</span></span>
+            <span>Rakt<span>Setu</span></span>
           </a>
           <div className="nav-links">
             <a href="#search">Find a donor</a>
@@ -325,7 +325,7 @@ function App() {
           <div className="container">
             <div className="how-heading">
               <span className="section-kicker">Simple and transparent</span>
-              <h2>How LifeLink works</h2>
+              <h2>How RaktSetu works</h2>
             </div>
             <div className="steps">
               <article>
@@ -353,7 +353,7 @@ function App() {
           <div>
             <a className="brand footer-brand" href="#top">
               <span className="brand-mark" aria-hidden="true">+</span>
-              <span>Life<span>Link</span></span>
+              <span>Rakt<span>Setu</span></span>
             </a>
             <p>Educational blood donor finder prototype.</p>
           </div>
@@ -365,9 +365,9 @@ function App() {
         </div>
         <div className="container disclaimer">
           <strong>Medical and emergency disclaimer</strong>
-          <p>LifeLink is a prototype for educational use and not a real emergency service or blood bank. All donor records are fictional. Availability does not confirm medical eligibility or blood compatibility. Always consult qualified medical professionals and use authorized blood bank channels.</p>
+          <p>RaktSetu is a prototype for educational use and not a real emergency service or blood bank. All donor records are fictional. Availability does not confirm medical eligibility or blood compatibility. Always consult qualified medical professionals and use authorized blood bank channels.</p>
         </div>
-        <div className="container copyright">© 2026 LifeLink. Demo project only.</div>
+        <div className="container copyright">© 2026 RaktSetu. Demo project only.</div>
       </footer>
     </>
   );
