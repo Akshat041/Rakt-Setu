@@ -167,8 +167,10 @@ The `Deploy to GitHub Pages` workflow builds the frontend and publishes the
 Settings → Pages, set the build and deployment source to **GitHub Actions**.
 
 GitHub Pages hosts only the frontend; it does not run the Express API. To use
-donor search and registration on the published site, deploy the API separately
-and set `VITE_API_BASE_URL` to that API's URL before building.
+donor search and registration on the published site, deploy the API separately.
+Add a repository Actions variable named `VITE_API_BASE_URL` with the API's
+public base URL (for example, `https://your-service.onrender.com`). The Pages
+workflow passes this value into the frontend build.
 
 ## Safety and Privacy
 
