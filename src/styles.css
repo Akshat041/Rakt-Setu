@@ -97,10 +97,10 @@ button, a, input, select { outline-offset: 3px; }
 .status.unavailable { color: #6b7280; background: #f1f2f4; }
 .donor-card-bottom { margin-top: 14px; border-top: 1px solid #f0eaea; padding-top: 12px; display: flex; align-items: center; color: var(--muted); font-size: 12px; }
 .location-icon { color: var(--red); margin-right: 5px; }
-.contact-button { margin-left: auto; height: 38px; display: inline-flex; align-items: center; border: 1px solid #e5cbca; border-radius: 7px; padding: 0 12px; color: var(--dark-red); font-weight: 800; }
+.contact-button { margin-left: auto; height: 44px; display: inline-flex; align-items: center; border: 1px solid #e5cbca; border-radius: 7px; padding: 0 12px; color: var(--dark-red); font-weight: 800; }
 
 .register-section { background: #fff8f7; padding: 84px 0; }
-.register-grid { display: grid; grid-template-columns: 40% 60%; gap: 56px; align-items: start; }
+.register-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 56px; align-items: start; }
 .register-copy { padding-top: 18px; }
 .register-copy > p { color: var(--muted); line-height: 1.7; }
 .register-copy ul { list-style: none; padding: 10px 0 0; margin: 0; display: grid; gap: 14px; }
@@ -147,7 +147,11 @@ footer { background: #211b1b; color: #f8eeee; padding: 52px 0 18px; }
   .hero-visual { transform: scale(.86); transform-origin: center; }
   .search-panel { grid-template-columns: 1fr 1fr; }
   .search-panel .search-button { grid-column: 1 / 2; }
-  .register-grid { grid-template-columns: 34% 66%; gap: 28px; }
+  .register-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 28px; }
+}
+
+@media (max-width: 760px) {
+  .register-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
@@ -164,14 +168,14 @@ footer { background: #211b1b; color: #f8eeee; padding: 52px 0 18px; }
   .hero-actions { flex-wrap: wrap; }
   .hero-visual { height: 380px; transform: scale(.78); margin: -20px 0; }
   .search-section, .register-section, .how-section { padding: 58px 0; }
-  .section-heading { align-items: start; }
+  .section-heading { display: block; }
   .section-heading h2, .register-copy h2, .how-heading h2 { font-size: 30px; }
-  .result-count { margin-top: 9px; }
+  .result-count { display: inline-block; margin-top: 9px; }
   .search-panel { grid-template-columns: 1fr; }
   .search-panel .search-button { grid-column: auto; }
   .donor-grid { grid-template-columns: 1fr; }
   .donor-card-top { align-items: start; }
-  .register-grid { grid-template-columns: 1fr; }
+  .donor-info > div { min-width: 0; }
   .register-copy { padding-top: 0; }
   .form-row { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; }
@@ -183,7 +187,6 @@ footer { background: #211b1b; color: #f8eeee; padding: 52px 0 18px; }
   .hero h1 { font-size: 42px; }
   .hero-actions { display: grid; grid-template-columns: 1fr; }
   .button { width: 100%; }
-  .section-heading { display: block; }
   .donor-info { align-items: center; }
   .blood-badge { width: 48px; flex-basis: 48px; }
   .status { font-size: 10px; }
