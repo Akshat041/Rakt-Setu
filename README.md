@@ -160,6 +160,16 @@ npm run preview
 
 Run the Express server separately for API requests.
 
+## GitHub Pages Deployment
+
+The `Deploy to GitHub Pages` workflow builds the frontend and publishes the
+`dist` directory when changes are pushed to `master`. In the repository's
+Settings → Pages, set the build and deployment source to **GitHub Actions**.
+
+GitHub Pages hosts only the frontend; it does not run the Express API. To use
+donor search and registration on the published site, deploy the API separately
+and set `VITE_API_BASE_URL` to that API's URL before building.
+
 ## Safety and Privacy
 
 - Use fictional data for demonstrations.
