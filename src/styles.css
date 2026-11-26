@@ -67,7 +67,7 @@ button, a, input, select { outline-offset: 3px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 24px; }
 .section-heading h2, .register-copy h2, .how-heading h2 { margin: 8px 0 0; font-size: 38px; letter-spacing: -1.5px; }
 .result-count { color: var(--muted); font-size: 13px; font-weight: 700; }
-.search-panel { display: grid; grid-template-columns: 1fr 1fr 1.15fr auto auto; gap: 12px; align-items: end; padding: 18px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 35px rgba(31,41,55,.06); }
+.search-panel { display: grid; grid-template-columns: 1fr 1fr 1.15fr 1fr auto auto; gap: 12px; align-items: end; padding: 18px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 35px rgba(31,41,55,.06); }
 .search-panel label, .registration-form label { display: flex; flex-direction: column; gap: 8px; }
 .search-panel label > span, .registration-form label > span { font-size: 12px; font-weight: 800; color: #4b5563; }
 .search-panel input, .search-panel select, .registration-form input, .registration-form select { width: 100%; height: 46px; border: 1px solid #ded6d4; border-radius: 7px; background: white; padding: 0 12px; color: var(--ink); }
@@ -110,6 +110,8 @@ button, a, input, select { outline-offset: 3px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .field-error { color: #b42318; font-size: 12px; }
 .success-message { border: 1px solid #bbdcc6; background: #effaf3; color: #166534; border-radius: 7px; padding: 11px 12px; font-size: 13px; font-weight: 700; }
+.error-message, .error-state { border: 1px solid #efc6c1; background: #fff2f0; color: #b42318; border-radius: 7px; }
+.error-message { padding: 11px 12px; font-size: 13px; font-weight: 700; }
 .toggle-row { height: 64px; border: 1px solid #ded6d4; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
 .toggle-row span strong, .toggle-row span small { display: block; }
 .toggle-row span strong { font-size: 13px; }

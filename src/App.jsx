@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
-import { bloodGroups, mockDonors } from "./data/donors";
+import { useEffect, useState } from "react";
+import { bloodGroups } from "./data/donors";
+import { apiRequest } from "./api";
 
-const initialFilters = { bloodGroup: "", city: "", locality: "" };
+const initialFilters = { bloodGroup: "", city: "", locality: "", available: "" };
 const initialRegistration = {
   name: "",
   bloodGroup: "",
@@ -14,35 +15,58 @@ const initialRegistration = {
 
 function App() {
   const [filters, setFilters] = useState(initialFilters);
-  const [donors, setDonors] = useState(mockDonors);
+  const [donors, setDonors] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [lastSearchFilters, setLastSearchFilters] = useState(initialFilters);
   const [registration, setRegistration] = useState(initialRegistration);
   const [formErrors, setFormErrors] = useState({});
   const [registrationMessage, setRegistrationMessage] = useState("");
+  const [registrationError, setRegistrationError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredDonors = useMemo(() => {
-    if (!hasSearched) return donors;
+  const fetchDonors = async (searchFilters = initialFilters) => {
+    setIsLoading(true);
+    setSearchError("");
 
-    const matchesText = (value, filter) =>
-      value.toLowerCase().includes(filter.trim().toLowerCase());
+    const params = new URLSearchParams();
+    if (searchFilters.bloodGroup) params.set("bloodGroup", searchFilters.bloodGroup);
+    if (searchFilters.city.trim()) params.set("city", searchFilters.city.trim());
+    if (searchFilters.locality.trim()) params.set("locality", searchFilters.locality.trim());
+    if (searchFilters.available) params.set("available", searchFilters.available);
 
-    return donors.filter((donor) => {
-      if (filters.bloodGroup && donor.bloodGroup !== filters.bloodGroup) return false;
-      if (filters.city && !matchesText(donor.city, filters.city)) return false;
-      if (filters.locality && !matchesText(donor.locality, filters.locality)) return false;
-      return true;
-    });
-  }, [donors, filters, hasSearched]);
+    try {
+      const data = await apiRequest(`/api/donors${params.size ? `?${params}` : ""}`);
+      setDonors(data.donors);
+    } catch (error) {
+      setDonors([]);
+      setSearchError(
+        error.message === "Failed to fetch"
+          ? "The API is unavailable. Check that the backend is running and try again."
+          : error.message,
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDonors(initialFilters);
+  }, []);
 
   const handleSearch = (event) => {
     event.preventDefault();
     setHasSearched(true);
+    setLastSearchFilters(filters);
+    fetchDonors(filters);
   };
 
   const clearSearch = () => {
     setFilters(initialFilters);
+    setLastSearchFilters(initialFilters);
     setHasSearched(false);
+    fetchDonors(initialFilters);
   };
 
   const validateRegistration = () => {
@@ -63,24 +87,45 @@ function App() {
     const errors = validateRegistration();
     setFormErrors(errors);
     setRegistrationMessage("");
+    setRegistrationError("");
 
     if (Object.keys(errors).length || isSubmitting) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    const nextDonor = {
-      id: Date.now(),
-      name: registration.name.trim(),
-      bloodGroup: registration.bloodGroup,
-      city: registration.city.trim(),
-      locality: registration.locality.trim(),
-      phone: registration.phone.trim(),
-      available: registration.available,
-    };
-    setDonors((current) => [nextDonor, ...current]);
-    setRegistration(initialRegistration);
-    setRegistrationMessage("Registration complete. Your fictional profile is now searchable.");
-    setIsSubmitting(false);
+    try {
+      const data = await apiRequest("/api/donors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registration),
+      });
+
+      setRegistration(initialRegistration);
+      setFormErrors({});
+      setRegistrationMessage(
+        `${data.donor.name} was registered successfully. Their profile is now stored in the directory.`,
+      );
+      await fetchDonors(lastSearchFilters);
+    } catch (error) {
+      if (error.details) {
+        const mappedErrors = {};
+        Object.entries(error.details).forEach(([field, message]) => {
+          mappedErrors[field] =
+            field === "consent"
+              ? "Consent is required to display your details."
+              : message;
+        });
+        setFormErrors(mappedErrors);
+      }
+      setRegistrationError(
+        error.status === 400
+          ? "Please correct the highlighted registration details."
+          : error.message === "Failed to fetch"
+            ? "The API is unavailable. The registration could not be submitted."
+            : error.message,
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,7 +184,7 @@ function App() {
                 <span className="section-kicker">Find help nearby</span>
                 <h2>Search for a blood donor</h2>
               </div>
-              <span className="result-count">{filteredDonors.length} donors found</span>
+              <span className="result-count">{donors.length} donors found</span>
             </div>
 
             <form className="search-panel" onSubmit={handleSearch}>
@@ -171,11 +216,39 @@ function App() {
                   onChange={(event) => setFilters({ ...filters, locality: event.target.value })}
                 />
               </label>
+              <label>
+                <span>Availability</span>
+                <select
+                  value={filters.available}
+                  onChange={(event) => setFilters({ ...filters, available: event.target.value })}
+                >
+                  <option value="">Any availability</option>
+                  <option value="true">Available</option>
+                  <option value="false">Unavailable</option>
+                </select>
+              </label>
               <button className="search-button" type="submit">Search donors <span aria-hidden="true">→</span></button>
               <button className="clear-button" type="button" onClick={clearSearch}>Clear filters</button>
             </form>
 
-            {!hasSearched ? (
+            {isLoading ? (
+              <div className="initial-state" role="status">
+                <span className="initial-icon" aria-hidden="true">⌕</span>
+                <div>
+                  <h3>Loading donors…</h3>
+                  <p>Fetching the latest directory from RaktSetu.</p>
+                </div>
+              </div>
+            ) : searchError ? (
+              <div className="empty-state error-state" role="alert">
+                <span aria-hidden="true">!</span>
+                <h3>Unable to load donors</h3>
+                <p>{searchError}</p>
+                <button type="button" onClick={() => fetchDonors(hasSearched ? lastSearchFilters : initialFilters)}>
+                  Try again
+                </button>
+              </div>
+            ) : !hasSearched ? (
               <div className="initial-state">
                 <span className="initial-icon" aria-hidden="true">⌕</span>
                 <div>
@@ -183,7 +256,7 @@ function App() {
                   <p>Choose filters above or browse all available fictional profiles below.</p>
                 </div>
               </div>
-            ) : filteredDonors.length === 0 ? (
+            ) : donors.length === 0 ? (
               <div className="empty-state" role="status">
                 <span aria-hidden="true">⌕</span>
                 <h3>No matching donors found</h3>
@@ -193,7 +266,7 @@ function App() {
             ) : null}
 
             <div className="donor-grid" aria-live="polite">
-              {filteredDonors.map((donor) => (
+              {donors.map((donor) => (
                 <article className="donor-card" key={donor.id}>
                   <div className="donor-card-top">
                     <div className="donor-info">
@@ -239,6 +312,7 @@ function App() {
 
             <form className="registration-form" onSubmit={handleRegistration} noValidate>
               {registrationMessage && <div className="success-message" role="status">{registrationMessage}</div>}
+              {registrationError && <div className="error-message" role="alert">{registrationError}</div>}
               <div className="form-row">
                 <label>
                   <span>Full name</span>
